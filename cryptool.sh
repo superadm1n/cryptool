@@ -24,9 +24,10 @@
 #
 
 # Script needs to be run as root!
-if [ $EUID -ne 0 ]; then
-   echo "This script must be run as root, try 'sudo ${0}' or login as root"
-   exit 1
+if [ $EUID -ne 0 ]
+    then
+        echo "This script must be run as root, try 'sudo ${0}' or login as root"
+    exit 1
 fi
 
 mapperName="drive"
@@ -52,7 +53,7 @@ check_if_mounted () {
 
     if mount | grep ${1} > /dev/null
     then
-    echo "Device '${2}' is Mounted at location '${1}'!"
+        echo "Device '${2}' is Mounted at location '${1}'!"
     else
         echo "Device ${2} is NOT mounted"
     fi
