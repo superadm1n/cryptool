@@ -23,23 +23,58 @@
 #SOFTWARE.
 #
 
-
+# Script needs to be run as root!
+if [ $EUID -ne 0 ]; then
+   echo "This script must be run as root, try 'sudo ${0}' or login as root"
+   exit 1
+fi
 
 mapperName="drive"
 
+availableDrives=`sudo fdisk -l | grep "Disk" | grep -v "Disklabel\|identifier" | cut -d " " -f 2 | cut -d ":" -f1`
 
+list_drives () {
+
+    # Function that gathers the attached disks on the system and prints them out
+
+    local availableDrives=`sudo fdisk -l | grep "Disk" | grep -v "Disklabel\|identifier" | cut -d " " -f 2 | cut -d ":" -f1`
+    local counter=1
+
+    for drive in ${availableDrives}
+    do
+        echo ${counter}. ${drive}
+        counter=$((counter+1))
+    done
+
+}
+
+check_if_mounted () {
+
+    if mount | grep ${1} > /dev/null
+    then
+    echo "Device '${2}' is Mounted at location '${1}'!"
+    else
+        echo "Device ${2} is NOT mounted"
+    fi
+
+}
 mount_drive () {
 
     # function for mounting a drive
 
-    echo "Enter the drive you wish to work on ex. /dev/sdb: "
+    list_drives
+
+    echo "Enter the drive you wish to work on ex. 1 <Enter> "
     read drive
+    selectedDrive=`list_drives | grep ${drive} | cut -d " " -f2`
 
     echo "Enter the mount location: "
     read mountLocation
 
-    sudo cryptsetup luksOpen ${drive} ${mapperName}
+    sudo cryptsetup luksOpen ${selectedDrive} ${mapperName}
     sudo mount /dev/mapper/${mapperName} ${mountLocation}
+
+    check_if_mounted ${mountLocation} ${selectedDrive}
 
 }
 
@@ -59,11 +94,15 @@ encrypt_drive () {
 
     # function for encrypting a drive with a password
 
-    echo "Enter the drive you wish to encrypt ex. /dev/sdb: "
-    read drive
+    list_drives
+
+    echo "Enter the drive you wish to encrypt ex. 1 <enter> "
+    read answer
+    local drive=`list_drives | grep ${answer} | cut -d " " -f2`
 
     sudo cryptsetup -y -v luksFormat ${drive}
 
+    echo "Now Decrypting the drive to finish the process and create file system."
     sudo cryptsetup luksOpen ${drive} ${mapperName}
 
     echo "Do you want to write all zeros to the drive for true security?"
@@ -77,6 +116,8 @@ encrypt_drive () {
 
     echo "Creating EXT4 file system"
     sudo mkfs.ext4 /dev/mapper/${mapperName}
+
+    sudo cryptsetup luksClose ${mapperName}
 
 }
 
