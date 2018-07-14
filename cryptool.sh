@@ -72,8 +72,13 @@ mount_drive () {
     read drive
     selectedDrive=`list_drives | grep ${drive} | cut -d " " -f2`
 
-    echo "Enter the mount location: "
-    read mountLocation
+    local mountLocation=""
+
+    until [ -d "${mountLocation}" ]
+    do
+        echo "Enter the mount location: "
+        read mountLocation
+    done
 
     sudo cryptsetup luksOpen ${selectedDrive} ${mapperName}
     sudo mount /dev/mapper/${mapperName} ${mountLocation}
@@ -82,12 +87,65 @@ mount_drive () {
 
 }
 
+check_for_drive () {
+
+    # function that will check to see if cryptsetup has a drive mapped under the
+    # predefined mapperName variable and echo True or Falsed based on that result
+
+    sudo cryptsetup -v status ${mapperName} &> /dev/null
+
+    if [ $? != 0 ]
+    then
+        echo "False"
+    else
+        echo "True"
+    fi
+
+}
+
+find_mount_location () {
+
+    # finds the mount location of a drive that is currently under the cryptsetup
+    # mapperName variable
+
+    local mountLocation=`sudo cryptsetup -v status ${mapperName} | grep "device:" | cut -d : -f2 | xargs`
+
+    echo ${mountLocation}
+
+}
+
+
 unmount_drive () {
 
     # function for un-mounting a drive
+    local answer=""
 
-    echo "Enter the mount location: "
-    read mountLocation
+    if [ `check_for_drive` == "True" ]
+    then
+        mountedDrive=`find_mount_location`
+        echo "Found device ${mountedDrive} is an encrypted drive that is currently mounted, do you want to un mount that one or enter one manually?"
+        echo "Y: Unmount ${mapperName}"
+        echo "M: Enter device manually."
+        read answer
+
+        if [ `echo ${answer} | cut -c1 | tr [:upper:] [:lower:]` == "m" ]
+        then
+            echo "Enter the mount location: "
+            read mountLocation
+        elif  [ `echo ${answer} | cut -c1 | tr [:upper:] [:lower:]` == "y" ]
+        then
+            mountLocation=`sudo mount | grep /dev/mapper/${mapperName} | cut -d " " -f3`
+        else
+            echo "Invalid selection please try again!"
+            exit 1
+        fi
+     else
+        echo "Unable to detect an encrypted drive that is mounted!"
+        exit 1
+
+    fi
+
+
 
     sudo umount ${mountLocation}
     sudo cryptsetup luksClose ${mapperName}
