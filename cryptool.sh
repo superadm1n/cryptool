@@ -51,6 +51,9 @@ list_drives () {
 
 check_if_mounted () {
 
+    # Requires 2 arguments, first being the file system location,
+    # the second being the drive
+
     if mount | grep ${1} > /dev/null
     then
         echo "Device '${2}' is Mounted at location '${1}'!"
