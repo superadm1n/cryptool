@@ -1,6 +1,11 @@
 # CrypTool.sh
 
-A little script I threw together to help streamline the process of encrypting drives, mounting them, and un-mounting them.
+A little script I threw together to help streamline the process of
+encrypting drives, mounting them, and un-mounting them. This is mainly
+useful on servers that do not have a GUI because typically the GUI
+will have an automated way of detecting and mounting the drive but
+on a computer without a GUI you wont have those tools, thus I felt
+the need for a more streamline process.
 
 ## Getting Started
 
