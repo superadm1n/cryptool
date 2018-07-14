@@ -171,7 +171,8 @@ encrypt_drive () {
     echo "NOTE! This will take a long time especially if the drive is large!"
     read confirmation
 
-    if [ "${confirmation}" == "y" ]
+    # cleans up the answer from the user and checks to see if the first letter is a 'y'
+    if [ `echo ${confirmation} | cut -c1 | tr [:upper:] [:lower:]` == "y" ]
     then
         sudo dd if=/dev/zero of=/dev/mapper/${mapperName} status=progress
     fi
