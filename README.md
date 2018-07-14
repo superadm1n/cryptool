@@ -22,11 +22,30 @@ sudo apt-get install cryptsetup
 
 ### Installing
 
-You can download the cryptool.sh file and run it directly or you can use git to copy the entire package
+You can download the cryptool.sh file, make it executable and run it
+directly or you can use git to copy the entire package.
 
 ```
-
 git clone https://github.com/superadm1n/cryptool
+cd cryptool
+sudo chmod 700 cryptool.sh
+```
+
+### Usage
+
+Encrypting a drive
+```
+sudo ./cryptool.sh --encrypt
+```
+
+Mounting a drive
+```
+sudo ./cryptool.sh --mount
+```
+
+Un-mounting a drive
+```
+sudo ./cryptool.sh --unmount
 ```
 
 ## Author
